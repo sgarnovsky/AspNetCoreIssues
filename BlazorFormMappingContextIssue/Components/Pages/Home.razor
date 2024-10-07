@@ -1,0 +1,100 @@
+﻿@page "/"
+
+<style>
+    .starship-form {
+        max-width: 500px;
+        margin: auto;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+
+    .btn {
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+    }
+</style>
+
+<EditForm Model="Model" FormName="Test" class="test-form">
+    <div class="form-group">
+        <label for="date">TestValue:</label>
+        <InputNumber id="testValue" @bind-Value="Model!.TestValue" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label for="personName">Person name:</label>
+        <InputText id="personName" @bind-Value="Model!.Person.Name" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label for="personAge">Person age:</label>
+        <InputNumber id="personAge" @bind-Value="Model!.Person.Age" class="form-control" />
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
+    <div class="form-group">
+        <b>
+            FormMappingContext Errors
+        </b>
+        <br />
+        @_formMappingErros
+    </div>
+</EditForm>
+
+@code {
+    private EditContext? editContext;
+
+    [CascadingParameter]
+    private FormMappingContext FormMappingContext { get; set; } = default!;
+
+    private MarkupString? _formMappingErros;
+
+    [SupplyParameterFromForm]
+    private Example? Model { get; set; }
+
+    private ValidationMessageStore? messageStore;
+
+    public class Example
+    {
+        public int? TestValue { get; set; }
+
+        public Person Person { get; set; } = new();
+    }
+
+    public class Person
+    {
+        public string? Name { get; set; }
+
+        public int? Age { get; set; }
+    }
+
+    protected override void OnInitialized()
+    {
+        Model ??= new();
+        editContext = new(Model);
+        messageStore = new(editContext);
+        base.OnInitialized();
+
+        var errors = FormMappingContext.GetAllErrors();
+        _formMappingErros = new MarkupString(string.Join("<br>", errors.Select(err => string.Join(' ', err.ErrorMessages))));
+    }
+}
+
